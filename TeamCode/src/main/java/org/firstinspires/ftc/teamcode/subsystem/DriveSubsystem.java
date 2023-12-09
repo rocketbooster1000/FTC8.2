@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
@@ -13,31 +14,27 @@ import static org.firstinspires.ftc.teamcode.common.Algorithms.returnMecanumValu
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.common.Constants;
+import org.firstinspires.ftc.teamcode.common.DcMotorWrapper;
 
 import java.util.function.DoubleSupplier;
 
 
 public class DriveSubsystem extends SubsystemBase {
     private DcMotorEx fL, fR, bL, bR;
-    private MotorWrapper fl, fr, bl, br;
     private IMU imu;
     private DoubleSupplier leftX, leftY, rightX;
 
     public DriveSubsystem(HardwareMap hwMap, GamepadEx gamepad){
-        fL = hwMap.get(DcMotorEx.class, "Front_left_motor");
-        fR = hwMap.get(DcMotorEx.class, "Front_right_motor");
-        bL = hwMap.get(DcMotorEx.class, "Back_left_motor");
-        bR = hwMap.get(DcMotorEx.class, "Back_right_motor");
+        fL = new DcMotorWrapper("Front_left", hwMap, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fR = new DcMotorWrapper("Front_right", hwMap, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bL = new DcMotorWrapper("Back_left", hwMap, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bR = new DcMotorWrapper("Back_right", hwMap, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        fL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        fR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        bL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        bR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        fR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        bL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        bR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        fl = new MotorWrapper(fL);
-        fr = new MotorWrapper(fR);
-        bl = new MotorWrapper(bL);
-        br = new MotorWrapper(bR);
 
 
 
@@ -57,17 +54,18 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setPowers(double[] powers){
-        fl.setPower(powers[0]);
-        fr.setPower(powers[1]);
-        bl.setPower(powers[2]);
-        br.setPower(powers[3]);
+        fL.setPower(powers[0]);
+        fR.setPower(powers[1]);
+        bL.setPower(powers[2]);
+        bR.setPower(powers[3]);
     }
 
     public void drive(){
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         double[] powers = returnMecanumValues(leftY.getAsDouble(), leftX.getAsDouble(), rightX.getAsDouble(), orientation.getYaw(AngleUnit.DEGREES), Constants.Drive.DRIVE_POWER_MODIFIER);
+        setPowers(powers);
     }
-
+    /*
     public class MotorWrapper{
         public DcMotorEx motor;
         double lastPower;
@@ -84,5 +82,5 @@ public class DriveSubsystem extends SubsystemBase {
             }
         }
     }
-
+    */
 }
